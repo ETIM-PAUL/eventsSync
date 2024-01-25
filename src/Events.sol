@@ -9,7 +9,10 @@ contract Events {
         uint endingDate;
         uint startDate;
         bool raffleDraw;
+        bool raffleDrawEnd;
         uint rafflePrice;
+        uint totalBalance;
+        uint totalRafflePrice;
         PriceCategory price;
         EventStatus status;
         EventParticipant[] _eventParticipants;
@@ -34,13 +37,18 @@ contract Events {
 
     mapping(address => EventDetails) public eventsMapping;
     mapping(uint => EventDetails) public eventsId;
+    mapping(address => mapping(uint => EventParticipant)) public eventGoers;
 
     error AlreadyHaveActiveEvent(string name);
+    error InvalidEvent();
+    error NotEventParticipant();
     error InsufficientFeeForNonRaffleEvent();
     error InsufficientFeeForRaffleEvent();
     error PastDate();
-    error RafflePriceNeeded();
+    error NotRafflePriceNeeded();
     error RegularPriceNeeded();
+    error NotRaffleEvent();
+    error RaffleDrawNotEnded();
     error VipPriceNeeded();
     error NotCreator();
     error StartingTimeHasnotReached();
@@ -54,7 +62,7 @@ contract Events {
     uint raffleDrawEventCreationPrice = 1e18;
     uint normalEventCreationPrice = 0.5e18;
 
-    function addEvent(
+    function createEvent(
         string memory _name,
         string memory _location,
         uint _endingDate,
@@ -82,7 +90,7 @@ contract Events {
             revert PastDate();
         }
         if (_raffleDraw && _rafflePrice < 0) {
-            revert RafflePriceNeeded();
+            revert NotRafflePriceNeeded();
         }
         if (_regularPrice < 0) {
             revert RegularPriceNeeded();
@@ -127,8 +135,9 @@ contract Events {
         eventDetails.status = EventStatus.Active;
     }
 
-    function endEvent() public {
-        EventDetails storage eventDetails = eventsMapping[msg.sender];
+    function endEvent(uint _eventId) external {
+        EventDetails storage eventDetails = eventsId[_eventId];
+
         if (eventDetails.creator != msg.sender) {
             revert NotCreator();
         }
@@ -141,6 +150,10 @@ contract Events {
         ) {
             revert EventOngoing();
         }
+        if (eventDetails.raffleDraw && !eventDetails.raffleDrawEnd) {
+            revert RaffleDrawNotEnded();
+        }
+
         eventDetails.status = EventStatus.Ended;
     }
 
@@ -148,6 +161,9 @@ contract Events {
         EventDetails storage eventDetails = eventsId[_eventId];
         EventParticipant memory _participant;
 
+        if (_eventId > eventsID) {
+            revert InvalidEvent();
+        }
         if (eventDetails.status == EventStatus.Active) {
             revert EventOngoing();
         }
@@ -162,11 +178,43 @@ contract Events {
         if (eventDetails.price.vipPrice == msg.value) {
             _participant._eventParticipant = msg.sender;
             _participant.ticketType = "VIP";
-            eventDetails._raffleDrawParticipants.push(_participant);
         }
 
+        eventGoers[msg.sender][_eventId] = _participant;
         eventDetails._eventParticipants.push(_participant);
     }
+
+    function buyEventRaffleDraw(uint _eventId) external payable {
+        EventDetails storage eventDetails = eventsId[_eventId];
+        EventParticipant storage _participant = eventGoers[msg.sender][
+            _eventId
+        ];
+
+        if (_eventId > eventsID) {
+            revert InvalidEvent();
+        }
+        if (eventDetails.status == EventStatus.Ended) {
+            revert EventEnded();
+        }
+        if (!eventDetails.raffleDraw) {
+            revert NotRaffleEvent();
+        }
+        if (
+            keccak256(abi.encodePacked(_participant.ticketType)) ==
+            keccak256(abi.encodePacked(("")))
+        ) {
+            revert NotEventParticipant();
+        }
+        if (msg.value < eventDetails.rafflePrice) {
+            revert NotRafflePriceNeeded();
+        }
+        _participant._eventParticipant = msg.sender;
+        _participant.ticketType = "Raffle Draw";
+        eventDetails._raffleDrawParticipants.push(_participant);
+    }
+
+    //add function to end raffle draw using random number feature
+    function endRaffleDraw(uint _eventId) external {}
 
     function getEvent() public view returns (EventDetails memory _event) {
         EventDetails storage eventDetails = eventsMapping[msg.sender];
