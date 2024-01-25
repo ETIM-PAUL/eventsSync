@@ -154,6 +154,8 @@ contract Events {
             revert RaffleDrawNotEnded();
         }
 
+        //add function to send out event tickets money to event creator (MAYOWA)
+
         eventDetails.status = EventStatus.Ended;
     }
 
@@ -179,6 +181,8 @@ contract Events {
             _participant._eventParticipant = msg.sender;
             _participant.ticketType = "VIP";
         }
+
+        eventDetails.totalBalance += msg.value;
 
         eventGoers[msg.sender][_eventId] = _participant;
         eventDetails._eventParticipants.push(_participant);
@@ -208,12 +212,15 @@ contract Events {
         if (msg.value < eventDetails.rafflePrice) {
             revert NotRafflePriceNeeded();
         }
+
+        eventDetails.totalRafflePrice += msg.value;
+
         _participant._eventParticipant = msg.sender;
         _participant.ticketType = "Raffle Draw";
         eventDetails._raffleDrawParticipants.push(_participant);
     }
 
-    //add function to end raffle draw using random number feature
+    //add function to end raffle draw using random number feature and pay out the total price to winner (MAYOWA)
     function endRaffleDraw(uint _eventId) external {}
 
     function getEvent() public view returns (EventDetails memory _event) {
