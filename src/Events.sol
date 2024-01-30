@@ -194,41 +194,41 @@ contract Events is RrpRequesterV0, Ownable {
         }
 
         //add function to send out event tickets money to event creator (MAYOWA)
-        if (
-            eventDetails.status == EventStatus.Pending && eventDetails._eventParticipants.length > 0
-                || eventDetails._raffleDrawParticipants.length > 0
-        ) {
-            if (eventDetails._eventParticipants.length > 0) {
-                for (uint256 i; i < eventDetails._eventParticipants.length; i++) {
-                    if (
-                        keccak256(abi.encodePacked(eventDetails._eventParticipants[i].ticketType))
-                            == keccak256(abi.encodePacked(("Regular")))
-                    ) {
-                        eventDetails.totalBalance -= eventDetails.price.regularPrice;
-                        payable(eventDetails._eventParticipants[i]._eventParticipant).call{
-                            value: eventDetails.price.regularPrice
-                        }("");
-                    }
-                    if (
-                        keccak256(abi.encodePacked(eventDetails._eventParticipants[i].ticketType))
-                            == keccak256(abi.encodePacked(("VIP")))
-                    ) {
-                        eventDetails.totalBalance -= eventDetails.price.vipPrice;
-                        payable(eventDetails._eventParticipants[i]._eventParticipant).call{
-                            value: eventDetails.price.vipPrice
-                        }("");
-                    }
-                }
-            }
-            if (eventDetails._raffleDrawParticipants.length > 0) {
-                for (uint256 i; i < eventDetails._raffleDrawParticipants.length; i++) {
-                    eventDetails.totalBalance -= eventDetails.rafflePrice;
-                    payable(eventDetails._eventParticipants[i]._eventParticipant).call{value: eventDetails.rafflePrice}(
-                        ""
-                    );
-                }
-            }
-        }
+        // if (
+        //     eventDetails.status == EventStatus.Pending && eventDetails._eventParticipants.length > 0
+        //         || eventDetails._raffleDrawParticipants.length > 0
+        // ) {
+        //     if (eventDetails._eventParticipants.length > 0) {
+        //         for (uint256 i; i < eventDetails._eventParticipants.length; i++) {
+        //             if (
+        //                 keccak256(abi.encodePacked(eventDetails._eventParticipants[i].ticketType))
+        //                     == keccak256(abi.encodePacked(("Regular")))
+        //             ) {
+        //                 eventDetails.totalBalance -= eventDetails.price.regularPrice;
+        //                 payable(eventDetails._eventParticipants[i]._eventParticipant).call{
+        //                     value: eventDetails.price.regularPrice
+        //                 }("");
+        //             }
+        //             if (
+        //                 keccak256(abi.encodePacked(eventDetails._eventParticipants[i].ticketType))
+        //                     == keccak256(abi.encodePacked(("VIP")))
+        //             ) {
+        //                 eventDetails.totalBalance -= eventDetails.price.vipPrice;
+        //                 payable(eventDetails._eventParticipants[i]._eventParticipant).call{
+        //                     value: eventDetails.price.vipPrice
+        //                 }("");
+        //             }
+        //         }
+        //     }
+        //     if (eventDetails._raffleDrawParticipants.length > 0) {
+        //         for (uint256 i; i < eventDetails._raffleDrawParticipants.length; i++) {
+        //             eventDetails.totalBalance -= eventDetails.rafflePrice;
+        //             payable(eventDetails._eventParticipants[i]._eventParticipant).call{value: eventDetails.rafflePrice}(
+        //                 ""
+        //             );
+        //         }
+        //     }
+        // }
         uint256 _totalBalance = eventDetails.totalBalance;
         eventDetails.totalBalance = 0;
         payable(eventDetails.creator).call{value: _totalBalance}("");
