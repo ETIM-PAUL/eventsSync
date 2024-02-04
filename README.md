@@ -169,5 +169,5 @@ There are rewards for users who use this event and ticketing platform.
 
 
 ## CONTRACT ADDRESS
-- EventSyncToken Contract Address 0xE81865ffaC0DCA6eff46B3e729FA5E2B299d8c7A
-- EventSync Contract Address 0xbf95B535B55fbBB3ef4178553A8171B7491798E5
+- EventSyncToken Contract Address **0xE81865ffaC0DCA6eff46B3e729FA5E2B299d8c7A**
+- EventSync Contract Address **0xbf95B535B55fbBB3ef4178553A8171B7491798E5**
